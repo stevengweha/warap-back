@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-const { PrepareStatementInfo } = require('mysql2');
 
 const userSchema = new mongoose.Schema({
   nom: { type: String, required: true },
