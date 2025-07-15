@@ -39,7 +39,7 @@ mongoose.connect(process.env.MONGO_URI)
   .then(async () => {
     console.log('✅ MongoDB connecté');
      // Insertion des utilisateurs si nécessaire
-    app.listen(5001, '0.0.0.0', () => {
+    server.listen(5001, '0.0.0.0', () => {
       console.log(`🚀 Serveur démarré sur http://localhost:5001`);
     });
   })
