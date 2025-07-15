@@ -18,10 +18,7 @@ dotenv.config();
 
 // Middlewares globaux
 app.use(bodyParser.json());
-app.use(cors({
-  origin: "https://warap-five.vercel.app", // ton domaine Vercel
-  credentials: true
-}));
+app.use(cors());
 app.use(express.json()); // Ajout pour parser le JSON si ce n'est pas déjà fait
 
 // Import des routes d'authentification
