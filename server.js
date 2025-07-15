@@ -18,7 +18,15 @@ dotenv.config();
 
 // Middlewares globaux
 app.use(bodyParser.json());
-app.use(cors());
+// Middleware CORS global
+app.use(cors({
+  origin: '*', // ou une liste blanche précise : ['https://tonapp.com']
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
+// Pour que les requêtes OPTIONS ne plantent pas
+app.options('*', cors());
 app.use(express.json()); // Ajout pour parser le JSON si ce n'est pas déjà fait
 
 // Import des routes d'authentification
