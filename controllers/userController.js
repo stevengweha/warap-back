@@ -34,15 +34,7 @@ exports.getUserById = async (req, res) => {
 // Mettre à jour un utilisateur
 exports.updateUser = async (req, res) => {
   try {
-    let updateData = { ...req.body };
-
-    // Si photoProfil est présent et ne commence pas par "data:image"
-    if (updateData.photoProfil && !updateData.photoProfil.startsWith('data:image')) {
-      // On force le préfixe JPEG (adapte si tu veux PNG)
-      updateData.photoProfil = `data:image/jpeg;base64,${updateData.photoProfil}`;
-    }
-
-    const user = await User.findByIdAndUpdate(req.params.id, updateData, { new: true });
+    const user = await User.findByIdAndUpdate(req.params.id, req.body, { new: true });
     if (!user) return res.status(404).json({ error: 'Utilisateur non trouvé' });
     res.json(user);
   } catch (err) {
