@@ -6,6 +6,38 @@ const express = require('express');
 const app = express();
 const bodyParser = require('body-parser');
 const cors = require('cors');
+exports.completeRegistration = [
+  authenticateJWT,
+  async (req, res) => {
+    try {
+      const { role, photoProfil, competences, bio } = req.body;
+      const userId = req.user.userId;
+
+      // Si photoProfil est en base64, on la stocke telle quelle
+      const update = {
+        role,
+        competences,
+        bio
+      };
+      if (photoProfil && photoProfil.startsWith('data:image')) {
+        update.photoProfilBase64 = photoProfil;
+      }
+
+      const user = await User.findByIdAndUpdate(
+        userId,
+        update,
+        { new: true }
+      );
+
+      if (!user) return res.status(404).json({ message: 'Utilisateur non trouvé.' });
+
+      res.json({ message: 'Profil complété avec succès.', user });
+    } catch (err) {
+      res.status(500).json({ message: 'Erreur serveur', error: err.message });
+    }
+  }
+];const fs = require('fs');
+const path = require('path');
 
 // Middleware global
 app.use(bodyParser.json());
@@ -60,10 +92,19 @@ exports.completeRegistration = [
       const { role, photoProfil, competences, bio } = req.body;
       const userId = req.user.userId;
 
-      // Met à jour l'utilisateur avec les infos complémentaires
+      // Si photoProfil est en base64, on la stocke telle quelle
+      const update = {
+        role,
+        competences,
+        bio
+      };
+      if (photoProfil && photoProfil.startsWith('data:image')) {
+        update.photoProfilBase64 = photoProfil;
+      }
+
       const user = await User.findByIdAndUpdate(
         userId,
-        { role, photoProfil, competences, bio },
+        update,
         { new: true }
       );
 
