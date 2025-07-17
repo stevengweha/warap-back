@@ -136,7 +136,7 @@ exports.login = async (req, res) => {
       { expiresIn: '24h' }
     );
 
-    res.json({ token, user: { id: user._id, nom: user.nom, prenom: user.prenom, email: user.email, role: user.role, photoProfil: user.photoProfil, competences: user.competences, bio: user.bio } });
+    res.json({ token, user: { id: user._id, nom: user.nom, prenom: user.prenom, email: user.email, role: user.role, photoProfil: user.photoProfil, competences: user.competences, bio: user.bio , telephone: user.telephone , adresse: user.adresse } });
   } catch (err) {
     res.status(500).json({ message: 'Erreur serveur', error: err.message });
   }
