@@ -62,6 +62,9 @@ app.get('/api/messages/job/:jobId', messageController.getMessagesByJob); // <-- 
 app.put('/api/messages/:id', messageController.updateMessage);
 app.delete('/api/messages/:id', messageController.deleteMessage);
 
+// Route pour récupérer les messages d'une conversation
+app.get('/api/messages/conversation/:conversationId', messageController.getMessagesByConversation);
+
 // Route pour récupérer la conversation entre deux utilisateurs
 app.get('/api/conversations/:userId/:otherUserId', messageController.getConversation);
 
@@ -83,6 +86,7 @@ app.put('/api/candidatures/:id', candidatureController.updateCandidature);
 app.delete('/api/candidatures/:id', candidatureController.deleteCandidature);
 // Vérifier si un chercheur a déjà candidaté à un job
 app.get('/api/candidatures/check/:jobId/:chercheurId', candidatureController.checkIfCandidated);
+
 // Routes CRUD pour les utilisateurs
 app.post('/api/users', userController.createUser);
 app.get('/api/users', userController.getAllUsers);
