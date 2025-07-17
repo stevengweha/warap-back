@@ -63,3 +63,17 @@ exports.deleteCandidature = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+// Vérifier si un chercheur a déjà candidaté à un job
+exports.checkIfCandidated = async (req, res) => {
+  try {
+    const { chercheurId, jobId } = req.query;
+    if (!chercheurId || !jobId) {
+      return res.status(400).json({ error: "Paramètres manquants" });
+    }
+
+    const exists = await Candidature.exists({ chercheurId, jobId });
+    res.json({ exists: !!exists });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};

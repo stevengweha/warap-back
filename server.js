@@ -81,6 +81,8 @@ app.get('/api/candidatures', candidatureController.getAllCandidatures);
 app.get('/api/candidatures/:id', candidatureController.getCandidatureById);
 app.put('/api/candidatures/:id', candidatureController.updateCandidature);
 app.delete('/api/candidatures/:id', candidatureController.deleteCandidature);
+// Vérifier si un chercheur a déjà candidaté à un job
+app.get('/api/candidatures/check/:jobId/:chercheurId', candidatureController.checkIfCandidated);
 
 // Routes CRUD pour les utilisateurs
 app.post('/api/users', userController.createUser);
