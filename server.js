@@ -63,7 +63,6 @@ app.put('/api/messages/:id', messageController.updateMessage);
 app.delete('/api/messages/:id', messageController.deleteMessage);
 
 // Route pour récupérer les messages d'une conversation
-app.get('/api/messages/conversation/:conversationId', messageController.getMessagesByConversation);
 
 // Route pour récupérer la conversation entre deux utilisateurs
 app.get('/api/conversations/:userId/:otherUserId', messageController.getConversation);
