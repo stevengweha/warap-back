@@ -99,7 +99,7 @@ exports.completeRegistration = [
         bio
       };
       if (photoProfil && photoProfil.startsWith('data:image')) {
-        update.photoProfilBase64 = photoProfil;
+        update.photoProfil = photoProfil;
       }
 
       const user = await User.findByIdAndUpdate(
