@@ -1,4 +1,5 @@
 const Candidature = require('../models/Candidature');
+const Job = require('../models/Job'); // Pour vérifier le quota
 
 // Créer une candidature
 exports.createCandidature = async (req, res) => {
@@ -74,6 +75,33 @@ exports.checkIfCandidated = async (req, res) => {
 
     const exists = await Candidature.exists({ jobId, chercheurId });
     res.json({ exists: !!exists });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+//verifier si le quota est atteint pour un job
+exports.checkQuota = async (req, res) => {
+  try {
+    const { jobId } = req.params;
+
+    if (!jobId) {
+      return res.status(400).json({ error: "Job ID manquant" });
+    }
+
+    const job = await Job.findById(jobId);
+    if (!job) {
+      return res.status(404).json({ error: "Job non trouvé" });
+    }
+
+    // ✅ Compter le nombre de candidatures pour ce job
+    const candidaturesCount = await Candidature.countDocuments({ jobId });
+
+    // ✅ Calcul du quota restant
+    const quotaRestant = Math.max(0, job.quota - candidaturesCount);
+    const quotaReached = candidaturesCount >= job.quota;
+
+    // ✅ Réponse complète
+    res.json({ quotaReached, quotaRestant });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

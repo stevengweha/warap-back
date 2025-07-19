@@ -9,6 +9,7 @@ const jobSchema = new mongoose.Schema({
   localisation: String,
   datePostee: { type: Date, default: Date.now },
   statut: { type: String, enum: ['ouverte', 'en_cours', 'complétée', 'annulée'], default: 'ouverte' },
+  quota: { type: Number, default: 1 },
   remuneration: Number,
   dateMission: Date,
   candidatures: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Candidature' }]

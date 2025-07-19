@@ -3,7 +3,7 @@ const Job = require('../models/Job');
 // Créer un job
 exports.createJob = async (req, res) => {
   try {
-    const { userId, jobId, titre, description, categorie, localisation, remuneration, dateMission } = req.body;
+    const { userId, jobId, titre, description, categorie, localisation, quota, remuneration, dateMission } = req.body;
     const job = new Job({
       userId,
       jobId,
@@ -11,6 +11,7 @@ exports.createJob = async (req, res) => {
       description,
       categorie,
       localisation,
+      quota,
       remuneration,
       dateMission
     });
