@@ -56,7 +56,6 @@ exports.getCandidatureById = async (req, res) => {
 };
 
 // Mettre à jour une candidature (statut/message)
-// Mettre à jour une candidature (statut/message) avec logique de quota et statut job
 exports.updateCandidature = async (req, res) => {
   try {
     const { statut } = req.body;
@@ -64,7 +63,7 @@ exports.updateCandidature = async (req, res) => {
 
     if (!candidature) return res.status(404).json({ error: 'Candidature non trouvée' });
 
-    // Mettre à jour les champs
+    // Mettre à jour les champs de la candidature
     candidature.statut = statut || candidature.statut;
     if (req.body.message) candidature.message = req.body.message;
     await candidature.save();
@@ -72,30 +71,37 @@ exports.updateCandidature = async (req, res) => {
     const job = await Job.findById(candidature.jobId);
     if (!job) return res.status(404).json({ error: 'Job lié non trouvé' });
 
-    // ✅ Cas : on accepte une candidature => statut job = "en_attente"
-    if (statut === "acceptee") {
-      job.statut = "en_attente";
-      await job.save();
-    }
-
-    // ✅ Vérifier combien de candidatures ACCEPTÉES existent
+    // Compter les candidatures acceptées pour ce job
     const acceptedCount = await Candidature.countDocuments({
       jobId: job._id,
       statut: "acceptee"
     });
 
-    // ✅ Si quota atteint => job = en_cours
-    if (acceptedCount >= job.quota && job.statut !== "en_cours") {
-      job.statut = "en_cours";
-      await job.save();
+    // Définir les statuts considérés comme "ouverts" / "en attente"
+    const openStatuses = ["en_attente", "ouverte"];
+
+    if (acceptedCount === 0) {
+      // Aucun candidat accepté => job doit être en "ouverte" ou "en_attente"
+      if (!openStatuses.includes(job.statut)) {
+        // Choix possible : mettre à "ouverte" par défaut
+        job.statut = "ouverte";
+        await job.save();
+      }
+    } else if (acceptedCount < job.quota) {
+      // Quota non atteint => job doit être "en_attente" ou "ouverte"
+      if (!openStatuses.includes(job.statut)) {
+        job.statut = "en_attente";
+        await job.save();
+      }
+    } else {
+      // Quota atteint ou dépassé => job = "en_cours"
+      if (job.statut !== "en_cours") {
+        job.statut = "en_cours";
+        await job.save();
+      }
     }
 
-    // ✅ Si quota NON atteint mais il est en "en_cours" => le remettre à "en_attente"
-    if (acceptedCount < job.quota && job.statut === "en_cours") {
-      job.statut = "en_attente";
-      await job.save();
-    }
-
+    // Recharger la candidature mise à jour avec population
     const updated = await Candidature.findById(candidature._id)
       .populate('chercheurId', 'nom prenom email photoProfil')
       .populate('jobId', 'titre');
@@ -106,6 +112,7 @@ exports.updateCandidature = async (req, res) => {
     res.status(400).json({ error: err.message });
   }
 };
+
 
 
 // Supprimer une candidature
