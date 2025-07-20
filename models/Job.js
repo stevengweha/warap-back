@@ -8,7 +8,7 @@ const jobSchema = new mongoose.Schema({
   categorie: String,
   localisation: String,
   datePostee: { type: Date, default: Date.now },
-  statut: { type: String, enum: ['ouverte', 'en_cours', 'complétée', 'annulée'], default: 'ouverte' },
+  statut: { type: String, enum: ['ouverte','en_attente', 'en_cours', 'complétée', 'annulée'], default: 'ouverte' },
   quota: { type: Number, default: 1 },
   remuneration: Number,
   dateMission: Date,
