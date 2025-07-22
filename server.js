@@ -132,10 +132,32 @@ io.on('connection', (socket) => {
     socket.join(conversationId);
   });
 
-  socket.on('sendMessage', (data) => {
-    // data doit contenir { conversationId, message }
-    io.to(data.conversationId).emit('receiveMessage', data.message);
-  });
+  socket.on('sendMessage', async (data) => {
+  const { conversationId, senderId, receiverId, contenu, jobId } = data;
+
+  try {
+    // Création et sauvegarde du message
+    const newMessage = new Message({
+      conversationId,
+      senderId,
+      receiverId,
+      contenu,
+      jobId,
+      dateEnvoi: new Date()
+    });
+    await newMessage.save();
+
+    // Émission du message à tous les clients de la conversation
+    const populatedMessage = await Message.findById(newMessage._id)
+  .populate('senderId', 'nom prenom email photoProfil')
+  .populate('receiverId', 'nom prenom email photoProfil')
+  .populate('jobId', 'titre');
+  
+io.to(conversationId).emit('receiveMessage', populatedMessage);
+  } catch (err) {
+    console.error('Erreur en sauvegardant le message:', err);
+  }
+});
 
   socket.on('disconnect', () => {
     // Retirer l'utilisateur de la liste des users en ligne

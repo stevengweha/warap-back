@@ -4,9 +4,10 @@ const Job = require('../models/Job'); // Pour peupler l'offre si besoin
 // Créer un message
 exports.createMessage = async (req, res) => {
   try {
-    const { jobId, senderId, receiverId, contenu } = req.body;
+    const { jobId ,conversationId ,senderId, receiverId, contenu } = req.body;
     const message = new Message({
       jobId,
+      conversationId, 
       senderId,
       receiverId,
       contenu
