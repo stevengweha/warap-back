@@ -110,8 +110,7 @@ exports.getConversation = async (req, res) => {
       .populate('senderId', 'nom prenom email photoProfil')
       .populate('receiverId', 'nom prenom email photoProfil')
       .populate('jobId', 'titre')
-      .populate('conversationId');
-
+      .populate('conversationId')
       .sort({ dateEnvoi: 1 })
       .lean();
 
