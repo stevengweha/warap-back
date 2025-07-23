@@ -16,7 +16,9 @@ exports.createMessage = async (req, res) => {
     const populatedMessage = await Message.findById(message._id)
       .populate('senderId', 'nom prenom email photoProfil')
       .populate('receiverId', 'nom prenom email photoProfil')
-      .populate('jobId', 'titre');
+      .populate('jobId', 'titre')
+      .populate('conversationId');
+
     res.status(201).json(populatedMessage);
   } catch (err) {
     res.status(400).json({ error: err.message });
@@ -29,7 +31,8 @@ exports.getAllMessages = async (req, res) => {
     const messages = await Message.find()
       .populate('senderId', 'nom prenom email photoProfil')
       .populate('receiverId', 'nom prenom email photoProfil')
-      .populate('jobId', 'titre');
+      .populate('jobId', 'titre')
+      .populate('conversationId');
     res.json(messages);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -42,7 +45,8 @@ exports.getMessageById = async (req, res) => {
     const message = await Message.findById(req.params.id)
       .populate('senderId', 'nom prenom email photoProfil')
       .populate('receiverId', 'nom prenom email photoProfil')
-      .populate('jobId', 'titre');
+      .populate('jobId', 'titre')
+      .populate('conversationId');
     if (!message) return res.status(404).json({ error: 'Message non trouvé' });
     res.json(message);
   } catch (err) {
@@ -84,7 +88,9 @@ exports.getMessagesByJob = async (req, res) => {
     const messages = await Message.find({ jobId: req.params.jobId })
       .populate('senderId', 'nom prenom email photoProfil')
       .populate('receiverId', 'nom prenom email photoProfil')
-      .populate('jobId', 'titre');
+      .populate('jobId', 'titre')
+      .populate('conversationId');
+
     res.json(messages);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -104,6 +110,8 @@ exports.getConversation = async (req, res) => {
       .populate('senderId', 'nom prenom email photoProfil')
       .populate('receiverId', 'nom prenom email photoProfil')
       .populate('jobId', 'titre')
+      .populate('conversationId');
+
       .sort({ dateEnvoi: 1 })
       .lean();
 
