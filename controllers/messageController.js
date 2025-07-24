@@ -3,47 +3,51 @@ const Job = require('../models/Job'); // Pour peupler l'offre
 const User = require('../models/User');
 const conversationId = require('../models/Conversation'); // modèle Conversation
 let io; // défini dans le fichier principal (server.js)
+const mongoose = require('mongoose'); // Assurez-vous d'importer mongoose pour ObjectId
+const Conversation = require('../models/Conversation');
+const Candidature = require('../models/Candidature'); // pour vérifier la candidature existante
 
-// Créer un message
 exports.createMessage = async (req, res) => {
   try {
-    const { jobId, senderId, receiverId, candidatureId, contenu } = req.body;
+    const { jobId, senderId, receiverId, contenu } = req.body;
+console.log("📥 Données reçues dans req.body :", req.body);
+    // Vérification des données reçues
 
-    // Vérifiez si la candidature existe pour le job et le destinataire
+    // 🔎 Rechercher automatiquement une candidature existante pour ce job
     const candidature = await Candidature.findOne({
-      _id: candidatureId,
       jobId: jobId,
-      receiverId: receiverId
-    });
-
+      //verifier si le chercheur a déjà postulé
+      chercheurId: senderId // Assurez-vous que le senderId est le chercheur
+    }); 
     if (!candidature) {
-      return res.status(404).json({ message: "Candidature non trouvée pour ce job et ce destinataire." });
+      console.log("Aucune candidature trouvée pour ce job et ce chercheur."); 
+    } else {
+      console.log("Candidature trouvée :", candidature._id);
+      // Si une candidature existe, on peut l'utiliser pour lier le message
     }
 
-    // Vérifiez si la conversation existe déjà
+
+
+    // 📦 Vérifie si une conversation existe déjà
     let conversation = await Conversation.findOne({
       participants: { $all: [senderId, receiverId] }
     });
 
-    // Si aucune conversation n'existe, créez-en une nouvelle
     if (!conversation) {
       conversation = new Conversation({
         participants: [senderId, receiverId]
       });
       await conversation.save();
       console.log("Nouvelle conversation créée:", conversation._id);
+    } else if (!conversation._id) {
+      conversation._id = new mongoose.Types.ObjectId();
+      await conversation.save();
+      console.log("ID attribué à la conversation existante:", conversation._id);
     } else {
-      // Si la conversation existe mais n'a pas d'ID, attribuez-lui un ID
-      if (!conversation._id) {
-        conversation._id = new mongoose.Types.ObjectId(); // Crée un nouvel ID
-        await conversation.save();
-        console.log("ID attribué à la conversation existante:", conversation._id);
-      } else {
-        console.log("Conversation existante trouvée:", conversation._id);
-      }
+      console.log("Conversation existante trouvée:", conversation._id);
     }
 
-    // Créez le message avec l'ID de la candidature
+    // 📨 Créer le message avec ou sans candidature
     const message = new Message({
       jobId,
       conversationId: conversation._id,
@@ -51,7 +55,7 @@ exports.createMessage = async (req, res) => {
       receiverId,
       contenu,
       dateEnvoi: new Date(),
-      candidatureId // Enregistrement de l'ID de la candidature
+      candidatureId: candidature ? candidature._id : undefined // ➕ associer automatiquement
     });
 
     await message.save();
@@ -62,6 +66,7 @@ exports.createMessage = async (req, res) => {
     res.status(500).json({ message: "Erreur lors de l'envoi du message." });
   }
 };
+
 
 // Récupérer tous les messages
 exports.getAllMessages = async (req, res) => {
