@@ -7,7 +7,18 @@ let io; // défini dans le fichier principal (server.js)
 // Créer un message
 exports.createMessage = async (req, res) => {
   try {
-    const { jobId, senderId, receiverId,candidatureId, dateEnvoi, contenu } = req.body;
+    const { jobId, senderId, receiverId, candidatureId, contenu } = req.body;
+
+    // Vérifiez si la candidature existe pour le job et le destinataire
+    const candidature = await Candidature.findOne({
+      _id: candidatureId,
+      jobId: jobId,
+      receiverId: receiverId
+    });
+
+    if (!candidature) {
+      return res.status(404).json({ message: "Candidature non trouvée pour ce job et ce destinataire." });
+    }
 
     // Vérifiez si la conversation existe déjà
     let conversation = await Conversation.findOne({
@@ -32,28 +43,23 @@ exports.createMessage = async (req, res) => {
       }
     }
 
-    // Créez le message
+    // Créez le message avec l'ID de la candidature
     const message = new Message({
       jobId,
-      conversationId: conversation._id, 
+      conversationId: conversation._id,
       senderId,
       receiverId,
       contenu,
       dateEnvoi: new Date(),
-      candidatureId 
+      candidatureId // Enregistrement de l'ID de la candidature
     });
 
     await message.save();
+    res.status(201).json({ message: "Message envoyé avec succès!", message });
 
-    const populatedMessage = await Message.findById(message._id)
-      .populate('senderId', 'nom prenom email photoProfil')
-      .populate('receiverId', 'nom prenom email photoProfil')
-      .populate('jobId', 'titre');
-
-      res.status(201).json(populatedMessage);
-  } catch (err) {
-    console.error("Erreur lors de la création du message:", err);
-    res.status(400).json({ error: err.message });
+  } catch (error) {
+    console.error("Erreur lors de l'envoi du message:", error);
+    res.status(500).json({ message: "Erreur lors de l'envoi du message." });
   }
 };
 
