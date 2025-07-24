@@ -97,7 +97,7 @@ exports.getMessagesByJob = async (req, res) => {
   }
 };
 
-// Récupérer tous les messages entre deux utilisateurs (et lier une offre si possible)
+// Récupérer tous les messages entre deux utilisateurs 
 exports.getConversation = async (req, res) => {
   const { userId, otherUserId } = req.params;
   try {
