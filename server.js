@@ -132,28 +132,12 @@ io.on('connection', (socket) => {
     socket.join(conversationId);
   });
 
-  socket.on('sendMessage', async (data) => {
-  const { conversationId, senderId, receiverId, contenu, jobId } = data;
-
+socket.on('sendMessage', async (data) => {
   try {
-    // Création et sauvegarde du message
-    const newMessage = new Message({
-      conversationId,
-      senderId,
-      receiverId,
-      contenu,
-      jobId,
-      dateEnvoi: new Date()
-    });
-    await newMessage.save();
-
+    const populatedMessage = await createMessage(data);
+    
     // Émission du message à tous les clients de la conversation
-    const populatedMessage = await Message.findById(newMessage._id)
-  .populate('senderId', 'nom prenom email photoProfil')
-  .populate('receiverId', 'nom prenom email photoProfil')
-  .populate('jobId', 'titre');
-  
-io.to(conversationId).emit('receiveMessage', populatedMessage);
+    io.to(data.conversationId).emit('receiveMessage', populatedMessage);
   } catch (err) {
     console.error('Erreur en sauvegardant le message:', err);
   }

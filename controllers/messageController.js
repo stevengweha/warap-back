@@ -9,7 +9,7 @@ exports.createMessage = async (req, res) => {
   try {
     const { jobId, senderId, receiverId, contenu } = req.body;
 
-    // Vérifiez ou créez la conversation
+    // Vérifiez si la conversation existe déjà
     let conversation = await Conversation.findOne({
       participants: { $all: [senderId, receiverId] }
     });
@@ -20,6 +20,16 @@ exports.createMessage = async (req, res) => {
         participants: [senderId, receiverId]
       });
       await conversation.save();
+      console.log("Nouvelle conversation créée:", conversation._id);
+    } else {
+      // Si la conversation existe mais n'a pas d'ID, attribuez-lui un ID
+      if (!conversation._id) {
+        conversation._id = new mongoose.Types.ObjectId(); // Crée un nouvel ID
+        await conversation.save();
+        console.log("ID attribué à la conversation existante:", conversation._id);
+      } else {
+        console.log("Conversation existante trouvée:", conversation._id);
+      }
     }
 
     // Créez le message
@@ -38,8 +48,9 @@ exports.createMessage = async (req, res) => {
       .populate('receiverId', 'nom prenom email photoProfil')
       .populate('jobId', 'titre');
 
-    res.status(201).json(populatedMessage);
+      res.status(201).json(populatedMessage);
   } catch (err) {
+    console.error("Erreur lors de la création du message:", err);
     res.status(400).json({ error: err.message });
   }
 };
