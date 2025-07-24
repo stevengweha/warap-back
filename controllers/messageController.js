@@ -7,7 +7,7 @@ let io; // défini dans le fichier principal (server.js)
 // Créer un message
 exports.createMessage = async (req, res) => {
   try {
-    const { jobId, senderId, receiverId, contenu } = req.body;
+    const { jobId, senderId, receiverId,candidatureId, dateEnvoi, contenu } = req.body;
 
     // Vérifiez si la conversation existe déjà
     let conversation = await Conversation.findOne({
@@ -38,7 +38,9 @@ exports.createMessage = async (req, res) => {
       conversationId: conversation._id, 
       senderId,
       receiverId,
-      contenu
+      contenu,
+      dateEnvoi: new Date(),
+      candidatureId 
     });
 
     await message.save();
