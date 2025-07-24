@@ -1,23 +1,42 @@
 const Message = require('../models/Message');
-const Job = require('../models/Job'); // Pour peupler l'offre si besoin
+const Job = require('../models/Job'); // Pour peupler l'offre 
+const User = require('../models/User');
+const conversationId = require('../models/Conversation'); // modèle Conversation
+let io; // défini dans le fichier principal (server.js)
 
 // Créer un message
 exports.createMessage = async (req, res) => {
   try {
-    const { jobId ,conversationId ,senderId, receiverId, contenu } = req.body;
+    const { jobId, senderId, receiverId, contenu } = req.body;
+
+    // Vérifiez ou créez la conversation
+    let conversation = await Conversation.findOne({
+      participants: { $all: [senderId, receiverId] }
+    });
+
+    // Si aucune conversation n'existe, créez-en une nouvelle
+    if (!conversation) {
+      conversation = new Conversation({
+        participants: [senderId, receiverId]
+      });
+      await conversation.save();
+    }
+
+    // Créez le message
     const message = new Message({
       jobId,
-      conversationId, 
+      conversationId: conversation._id, 
       senderId,
       receiverId,
       contenu
     });
+
     await message.save();
+
     const populatedMessage = await Message.findById(message._id)
       .populate('senderId', 'nom prenom email photoProfil')
       .populate('receiverId', 'nom prenom email photoProfil')
-      .populate('jobId', 'titre')
-      .populate('conversationId');
+      .populate('jobId', 'titre');
 
     res.status(201).json(populatedMessage);
   } catch (err) {
@@ -97,7 +116,7 @@ exports.getMessagesByJob = async (req, res) => {
   }
 };
 
-// Récupérer tous les messages entre deux utilisateurs 
+// Récupérer tous les messages entre deux utilisateurs (et lier une offre si possible)
 exports.getConversation = async (req, res) => {
   const { userId, otherUserId } = req.params;
   try {
