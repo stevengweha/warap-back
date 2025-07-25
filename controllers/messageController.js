@@ -3,9 +3,13 @@ const Job = require('../models/Job'); // Pour peupler l'offre
 const User = require('../models/User');
 const conversationId = require('../models/Conversation'); // modèle Conversation
 let io; // défini dans le fichier principal (server.js)
+exports.setSocketIo = (socketIoInstance) => {
+  io = socketIoInstance;
+};
 const mongoose = require('mongoose'); // Assurez-vous d'importer mongoose pour ObjectId
 const Conversation = require('../models/Conversation');
 const Candidature = require('../models/Candidature'); // pour vérifier la candidature existante
+
 
 exports.createMessage = async (req, res) => {
   try {
@@ -59,7 +63,16 @@ console.log("📥 Données reçues dans req.body :", req.body);
     });
 
     await message.save();
-    res.status(201).json({ message: "Message envoyé avec succès!", message });
+
+    // 🔊 Émettre le message à tous les clients de la conversation
+    const populatedMessage = await Message.findById(message._id)
+      .populate('senderId', 'nom prenom email photoProfil')
+      .populate('receiverId', 'nom prenom email photoProfil')
+      .populate('jobId', 'titre');
+
+    // Émettre le message peuplé à tous les clients de la conversation
+io.emit(`conversation:${conversation._id}`, populatedMessage);
+      console.log("Message envoyé et peuplé :", populatedMessage);
 
   } catch (error) {
     console.error("Erreur lors de l'envoi du message:", error);

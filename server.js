@@ -105,6 +105,8 @@ const io = new Server(server, {
     methods: ['GET', 'POST']
   }
 });
+messageController.setSocketIo(io); // Passer l'instance de socket.io au contrôleur des messages
+conversationController.setSocketIo(io); // Passer l'instance de socket.io au contrôleur des conversations
 
 // Gestion des connexions socket.io
 const onlineUsers = new Map();
@@ -132,17 +134,6 @@ io.on('connection', (socket) => {
     socket.join(conversationId);
   });
 
-socket.on('sendMessage', async (data) => {
-  try {
-    const populatedMessage = await createMessage(data);
-    
-    // Émission du message à tous les clients de la conversation
-    io.to(data.conversationId).emit('receiveMessage', populatedMessage);
-  } catch (err) {
-    console.error('Erreur en sauvegardant le message:', err);
-  }
-});
-
   socket.on('disconnect', () => {
     // Retirer l'utilisateur de la liste des users en ligne
     for (const [userId, sockId] of onlineUsers.entries()) {
@@ -155,7 +146,6 @@ socket.on('sendMessage', async (data) => {
     console.log('Utilisateur déconnecté :', socket.id);
   });
 });
-
 
 
 

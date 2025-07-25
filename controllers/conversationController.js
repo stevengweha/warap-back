@@ -1,4 +1,10 @@
 const Conversation = require('../models/Conversation');
+const Message = require('../models/Message'); // Assurez-vous d'importer le modèle Message
+const Candidature = require('../models/Candidature'); // pour vérifier la candidature existante
+let io; // défini dans le fichier principal (server.js)
+exports.setSocketIo = (socketIoInstance) => {
+  io = socketIoInstance;
+};
 
 // Créer une conversation
 exports.createConversation = async (req, res) => {
