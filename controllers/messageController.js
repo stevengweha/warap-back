@@ -71,7 +71,8 @@ console.log("📥 Données reçues dans req.body :", req.body);
       .populate('jobId', 'titre');
 
     // Émettre le message peuplé à tous les clients de la conversation
-io.emit(`conversation:${conversation._id}`, populatedMessage);
+// côté serveur
+io.to(conversation._id.toString()).emit("receiveMessage", populatedMessage);
       console.log("Message envoyé et peuplé :", populatedMessage);
 
   } catch (error) {
