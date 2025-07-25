@@ -95,8 +95,8 @@ app.get('/api/users/:id', userController.getUserById);
 app.put('/api/users/:id', userController.updateUser);
 app.delete('/api/users/:id', userController.deleteUser);
 
-const https = require('http');
-const server = https.createServer(app);
+const http = require('http');
+const server = http.createServer(app);
 
 const { Server } = require('socket.io');
 const io = new Server(server, {
@@ -123,7 +123,7 @@ io.on('connection', (socket) => {
   socket.on('sendMessage', (message) => {
     io.emit(`conversation:${message.conversationId}`, message);
   });
-
+  
   // Gestion du statut "en train d'écrire"
   socket.on('typing', ({ conversationId, userId }) => {
     socket.to(conversationId).emit('typing', { userId });
