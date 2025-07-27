@@ -14,20 +14,20 @@ const Candidature = require('../models/Candidature'); // pour vérifier la candi
 exports.createMessage = async (req, res) => {
   try {
     const { jobId, senderId, receiverId, contenu } = req.body;
-console.log("📥 Données reçues dans req.body :", req.body);
+console.log(" Données reçues dans req.body :", req.body);
     // Vérification des données reçues
 
-    // 🔎 Rechercher automatiquement une candidature existante pour ce job
-    const candidature = await Candidature.findOne({
-      jobId: jobId,
-      //verifier si le chercheur a déjà postulé
-      chercheurId: senderId // Assurez-vous que le senderId est le chercheur
-    }); 
+    // rechercher si une candidature existe entre les deux 
+    const candidature = await Candidature.findOne({ jobId, chercheurId: senderId });
+  
+    
     if (!candidature) {
       console.log("Aucune candidature trouvée pour ce job et ce chercheur."); 
     } else {
       console.log("Candidature trouvée :", candidature._id);
       // Si une candidature existe, on peut l'utiliser pour lier le message
+      req.body.candidatureId = candidature._id; // Associer la candidature au message
+      
     }
 
 
