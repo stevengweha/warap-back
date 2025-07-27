@@ -13,33 +13,39 @@ const Candidature = require('../models/Candidature'); // pour vérifier la candi
 
 exports.createMessage = async (req, res) => {
   try {
-    const { jobId, senderId, receiverId, contenu } = req.body;
+    const { jobId, senderId, receiverId, contenu , candidatureId} = req.body;
 console.log(" Données reçues dans req.body :", req.body);
     // Vérification des données reçues
 
-    // rechercher si une candidature existe entre les deux 
-    const candidature = await Candidature.findOne({ jobId, chercheurId: senderId });
-  
-    
-    if (!candidature) {
-      console.log("Aucune candidature trouvée pour ce job et ce chercheur."); 
+    // Étape 1 : déterminer le candidatureId à utiliser
+    let finalCandidatureId = candidatureId;
+
+    if (!finalCandidatureId) {
+      // Si le front ne l'a pas envoyé, on cherche automatiquement
+      const candidature = await Candidature.findOne({ jobId, chercheurId: senderId });
+      if (candidature) {
+        finalCandidatureId = candidature._id;
+        console.log("Candidature trouvée automatiquement :", finalCandidatureId);
+      } else {
+        console.log("Aucune candidature trouvée pour ce job et ce chercheur.");
+      }
     } else {
-      console.log("Candidature trouvée :", candidature._id);
-      // Si une candidature existe, on peut l'utiliser pour lier le message
-      req.body.candidatureId = candidature._id; // Associer la candidature au message
-      
+      console.log("CandidatureId fourni par le front :", finalCandidatureId);
     }
 
 
 
     // 📦 Vérifie si une conversation existe déjà
     let conversation = await Conversation.findOne({
-      participants: { $all: [senderId, receiverId] }
+      participants: { $all: [senderId, receiverId] },
+      jobId: jobId // Assurez-vous que la conversation est liée à l'offre
     });
 
     if (!conversation) {
       conversation = new Conversation({
-        participants: [senderId, receiverId]
+        jobId,
+        participants: [senderId, receiverId],
+        candidatureId: finalCandidatureId // Associe la candidature si trouvée
       });
       await conversation.save();
       console.log("Nouvelle conversation créée:", conversation._id);
@@ -59,7 +65,7 @@ console.log(" Données reçues dans req.body :", req.body);
       receiverId,
       contenu,
       dateEnvoi: new Date(),
-      candidatureId: candidature ? candidature._id : undefined // ➕ associer automatiquement
+      candidatureId: candidatureId || finalCandidatureId // Utilise le candidatureId trouvé ou celui envoyé
     });
 
     await message.save();
@@ -74,6 +80,8 @@ console.log(" Données reçues dans req.body :", req.body);
 // côté serveur
 io.to(conversation._id.toString()).emit("receiveMessage", populatedMessage);
       console.log("Message envoyé et peuplé :", populatedMessage);
+
+    res.status(201).json(populatedMessage);
 
   } catch (error) {
     console.error("Erreur lors de l'envoi du message:", error);
