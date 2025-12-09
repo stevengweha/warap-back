@@ -3,16 +3,16 @@ const router = express.Router();
 const authController = require('../controllers/authController');
 const { authenticateJWT, authorizeRoles } = require('../middleware/auth');
 
-// Inscription étape 1
+// Inscription simple
 router.post('/register', authController.register);
-
-// Inscription étape 2 (complétion du profil)
-router.post('/complete-registration', authController.completeRegistration);
 
 // Connexion
 router.post('/login', authController.login);
 
-//route protégée (admin uniquement)
+// Récupérer tous les utilisateurs (protégé)
+router.get('/users', authenticateJWT, authController.getAllUsers);
+
+// Exemple de route admin uniquement
 router.get('/admin', authenticateJWT, authorizeRoles('admin'), (req, res) => {
   res.json({ message: 'Accès admin autorisé.' });
 });

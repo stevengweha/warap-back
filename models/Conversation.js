@@ -1,12 +1,14 @@
 const mongoose = require('mongoose');
+const { Schema } = mongoose;
 
-const conversationSchema = new mongoose.Schema({
-  participants: [
-    { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }
-  ],
-  jobId: { type: mongoose.Schema.Types.ObjectId, ref: 'Job', required: true },
-  candidatureId: { type: mongoose.Schema.Types.ObjectId, ref: 'Candidature' }, // Lien vers la candidature
-  createdAt: { type: Date, default: Date.now }
-});
+const conversationSchema = new Schema(
+  {
+    participants: [
+      { type: Schema.Types.ObjectId, ref: 'User', required: true } // Les colocataires participants
+    ],
+    createdAt: { type: Date, default: Date.now }
+  },
+  { timestamps: true }
+);
 
-module.exports = mongoose.model('Conversation', conversationSchema);
+module.exports = mongoose.models.Conversation || mongoose.model('Conversation', conversationSchema);
